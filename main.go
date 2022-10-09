@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type Project struct {
@@ -24,15 +26,22 @@ func allProjects(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(projects)
 }
 
+func postProjects(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Post projects endpoint hit")
+}
+
 func homePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Homepage endpoint hit")
 }
 
 func handleRequests() {
-	http.HandleFunc("/", homePage)
-	http.HandleFunc("/projects", allProjects)
+	router := mux.NewRouter().StrictSlash(true)
 
-	err := http.ListenAndServe(":8080", nil)
+	router.HandleFunc("/", homePage)
+	router.HandleFunc("/projects", allProjects).Methods("GET")
+	router.HandleFunc("/projects", postProjects).Methods("POST")
+
+	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
